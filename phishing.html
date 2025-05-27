@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Phishing : Fiches & Quiz interactif</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --bg: #f3f4fa;
+            --main: #4666e2;
+            --danger: #e11d48;
+            --success: #16a34a;
+            --soft: #f1f5fb;
+            --text: #1e293b;
+            --card: #fff;
+        }
+        body {
+            background: linear-gradient(120deg, var(--bg) 0%, #dbeafe 100%);
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: var(--text);
+        }
+        .container {
+            max-width: 1040px;
+            margin: 38px auto 0 auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px #4666e226;
+            padding: 40px 22px 32px 22px;
+            overflow: visible;
+        }
+        h1 {
+            color: var(--main);
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 0.1em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6e7ccf;
+            margin-bottom: 2em;
+            font-size: 1.12em;
+            font-weight: 500;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            justify-content: center;
+            margin-bottom: 2.7em;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 15px;
+            box-shadow: 0 2px 12px #c7d2fe65;
+            width: 240px;
+            min-height: 230px;
+            padding: 21px 18px 18px 18px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow .22s, transform .13s;
+            position: relative;
+        }
+        .card:hover, .card.active {
+            box-shadow: 0 6px 26px #4666e22b;
+            transform: translateY(-6px) scale(1.03);
+        }
+        .card-emoji {
+            font-size: 2em;
+            margin-bottom: 12px;
+            transition: transform .23s;
+        }
+        .card:hover .card-emoji,
+        .card.active .card-emoji {
+            transform: scale(1.13) rotate(-5deg);
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 1.09em;
+            color: var(--main);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .card-brief {
+            color: #555c8a;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        /* Modal (fiche détaillée) */
+        .fiche-bg {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(33,41,91,0.18);
+            justify-content: center;
+            align-items: center;
+        }
+        .fiche-bg.active {
+            display: flex;
+            animation: fadeinbg .18s;
+        }
+        @keyframes fadeinbg {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+        .fiche {
+            background: #fff;
+            max-width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 8px 36px #4657c090;
+            padding: 32px 24px 25px 24px;
+            position: relative;
+            animation: ficheup .20s;
+        }
+        @keyframes ficheup {
+            from { transform: translateY(80px) scale(0.92); opacity:0; }
+            to { transform: translateY(0) scale(1); opacity:1; }
+        }
+        .fiche-close {
+            position: absolute;
+            top: 13px; right: 17px;
+            font-size: 1.2em;
+            background: none;
+            border: none;
+            color: #7186e0;
+            cursor: pointer;
+            font-weight: bold;
+            transition: color .13s;
+        }
+        .fiche-close:hover { color: #d90429; }
+        .fiche-emoji { font-size: 2.15em; text-align: center; margin-bottom: 6px; }
+        .fiche-title {
+            text-align: center;
+            font-weight: 700;
+            color: var(--main);
+            font-size: 1.17em;
+            margin-bottom: 0.5em;
+        }
+        .fiche-section { margin-bottom: 1em; }
+        .fiche-section b { color: var(--main); }
+        .fiche-example, .fiche-tips {
+            background: var(--soft);
+            border-radius: 9px;
+            padding: 12px 13px;
+            font-size: 0.98em;
+            margin-bottom: 0.8em;
+        }
+        .fiche-example { border-left: 4px solid var(--main);}
+        .fiche-tips { border-left: 4px solid var(--success);}
+        .fiche-danger {
+            border-left: 4px solid var(--danger);
+            background: #fff1f2;
+            color: #b91c1c;
+            margin-bottom: 0.6em;
+        }
+        .fiche-footer {
+            text-align: center;
+            margin-top: 1.2em;
+            color: #9ea5bb;
+            font-size: 0.96em;
+        }
+        /* Quiz styles */
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+            background: #f7f7fd;
+            border-radius: 13px;
+            box-shadow: 0 2px 14px #a6b5e53c;
+            padding: 30px 25px 28px 25px;
+            color: #232946;
+        }
+        .quiz-title {
+            color: var(--main);
+            font-size: 1.12em;
+            font-weight: 600;
+            margin-bottom: 0.7em;
+        }
+        .quiz-q {
+            margin-bottom: 1.2em;
+            font-size: 1.06em;
+            font-weight: 500;
+        }
+        .quiz-choices label {
+            display: block;
+            margin-bottom: 0.65em;
+            background: #fff;
+            border-radius: 8px;
+            border: 1.2px solid #dbeafe;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background .18s, border .2s;
+        }
+        .quiz-choices input[type="radio"] {
+            margin-right: 9px;
+        }
+        .quiz-choices label.selected {
+            background: #e0e7ff;
+            border-color: var(--main);
+        }
+        .quiz-submit {
+            margin-top: 1.2em;
+            display: block;
+            width: 100%;
+            padding: 12px 0;
+            font-size: 1.07em;
+            background: var(--main);
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #4666e234;
+            transition: background .16s, transform .12s;
+        }
+        .quiz-submit:hover { background: #2d44a8; transform: translateY(-1.5px) scale(1.02);}
+        .quiz-result {
+            margin-top: 1.3em;
+            text-align: center;
+            font-size: 1.12em;
+            font-weight: bold;
+            color: var(--success);
+        }
+        .quiz-bad {
+            color: var(--danger);
+        }
+        @media (max-width: 700px) {
+            .container { padding: 9px 2vw; }
+            .cards { flex-direction: column; align-items: center; gap: 15px;}
+            .fiche { max-width: 98vw;}
+            .quiz-container { padding: 19px 7vw;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Phishing : Fiches interactives & Quiz</h1>
+    <div class="subtitle">
+        Découvrez les différents types d’hameçonnage en cliquant sur chaque fiche.<br>
+        <b>Testez vos connaissances avec un quiz en bas de page !</b>
+    </div>
+    <div class="cards">
+        <div class="card" data-fiche="spear">
+            <div class="card-emoji">🎯</div>
+            <div class="card-title">Hameçonnage de la lance<br>(Spear phishing)</div>
+            <div class="card-brief">Ciblage précis avec infos personnalisées sur la victime.</div>
+        </div>
+        <div class="card" data-fiche="vishing">
+            <div class="card-emoji">📞</div>
+            <div class="card-title">Vishing</div>
+            <div class="card-brief">Appel téléphonique pour soutirer infos ou accès.</div>
+        </div>
+        <div class="card" data-fiche="smishing">
+            <div class="card-emoji">💬</div>
+            <div class="card-title">Smishing</div>
+            <div class="card-brief">Attaque par SMS (problème de compte, livraison…)</div>
+        </div>
+        <div class="card" data-fiche="whaling">
+            <div class="card-emoji">🐋</div>
+            <div class="card-title">Chasse à la baleine<br>(Whaling)</div>
+            <div class="card-brief">Ciblage des cadres dirigeants pour des attaques majeures.</div>
+        </div>
+        <div class="card" data-fiche="clone">
+            <div class="card-emoji">📝</div>
+            <div class="card-title">Cloner l’hameçonnage</div>
+            <div class="card-brief">Imite un mail légitime déjà reçu, modifié avec un lien malveillant.</div>
+        </div>
+        <div class="card" data-fiche="seo">
+            <div class="card-emoji">🔎</div>
+            <div class="card-title">Empoisonnement SEO</div>
+            <div class="card-brief">Manipulation des résultats de recherche pour piéger l'utilisateur.</div>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz-root" class="quiz-container"></div>
+</div>
+<!-- Fiches modales -->
+<div class="fiche-bg" id="fiche-bg"></div>
+
+<script>
+    // Détail de chaque fiche
+    const fiches = {
+        spear: {
+            emoji: "🎯",
+            title: "Hameçonnage de la lance (Spear phishing)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Bonjour Nathalie, j'ai vu que vous gériez le projet X. Veuillez consulter le document joint concernant le planning. Merci !</i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>Email très personnalisé (prénom, projet, collègues, etc.)</li>
+                            <li>Infos contextuelles qui semblent réelles</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Les attaquants récoltent des infos sur LinkedIn, réseaux sociaux, signature d’email, etc. Restez vigilant même si le mail semble “officiel”.
+                    </div>`
+                }
+            ]
+        },
+        vishing: {
+            emoji: "📞",
+            title: "Vishing (hameçonnage vocal)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Bonjour, je vous appelle du support technique Microsoft, votre ordinateur est infecté. Veuillez me donner votre mot de passe pour que je règle le problème.</i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>Appel inattendu, accent sur l’urgence</li>
+                            <li>Demande d’infos sensibles (CB, accès pro, PII...)</li>
+                            <li>Numéro parfois masqué ou international</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Ne jamais donner de données confidentielles par téléphone sans vérification de l’identité de l’appelant.
+                    </div>`
+                }
+            ]
+        },
+        smishing: {
+            emoji: "💬",
+            title: "Smishing (hameçonnage par SMS)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Votre colis n’a pas pu être livré. Cliquez ici pour le reprogrammer : <b>http://moncolis-urgent.com</b></i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>SMS avec un lien cliquable</li>
+                            <li>Message alarmant : compte bloqué, livraison ratée...</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Ne cliquez jamais sur un lien reçu par SMS sans vérification. Les banques, impôts, etc. n’envoient pas de liens directs par SMS.
+                    </div>`
+                }
+            ]
+        },
+        whaling: {
+            emoji: "🐋",
+            title: "Chasse à la baleine (Whaling)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Un dirigeant reçoit un mail de “l’auditeur externe” lui demandant d’approuver en urgence un virement de 200 000€.</i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>Cible un cadre supérieur ou VIP</li>
+                            <li>Montants importants ou accès à des données critiques</li>
+                            <li>Demande d’action rapide, souvent avec une fausse urgence</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Toujours confirmer ce type de demande auprès de l’intéressé en personne ou par téléphone sécurisé.
+                    </div>`
+                }
+            ]
+        },
+        clone: {
+            emoji: "📝",
+            title: "Cloner l’hameçonnage (Clone phishing)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Vous recevez un mail identique à un mail légitime reçu la veille (“suivi de livraison”, “facture client”) mais avec une pièce jointe ou un lien modifié.</i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>Mail semble identique à un déjà reçu mais un détail a changé</li>
+                            <li>Demande inhabituelle dans la pièce jointe/lien</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Comparez toujours les anciens mails : si le nouveau contient un fichier/lien inattendu, prudence !
+                    </div>`
+                }
+            ]
+        },
+        seo: {
+            emoji: "🔎",
+            title: "Empoisonnement SEO (SEO Poisoning)",
+            sections: [
+                {
+                    html: `<div class="fiche-section fiche-example"><b>Exemple :</b><br>
+                    <i>Vous cherchez “moncompteimpots” sur Google, cliquez sur le premier résultat sponsorisé qui ressemble au vrai site, mais il s’agit d’une page malveillante.</i>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section">
+                        <b>Comment le reconnaître ?</b>
+                        <ul>
+                            <li>Site en haut des résultats qui imite un service officiel</li>
+                            <li>L’URL est différente ou suspecte</li>
+                        </ul>
+                    </div>`
+                },
+                {
+                    html: `<div class="fiche-section fiche-tips">
+                        Tapez toujours l’URL officielle ou utilisez vos favoris, ne cliquez pas sur les liens sponsorisés pour des sites sensibles.
+                    </div>`
+                }
+            ]
+        }
+    };
+
+    // Création dynamique des fiches
+    function showFiche(ficheKey) {
+        const fiche = fiches[ficheKey];
+        let html = `
+            <div class="fiche">
+                <button class="fiche-close" aria-label="Fermer la fiche" onclick="closeFiche()">&times;</button>
+                <div class="fiche-emoji">${fiche.emoji}</div>
+                <div class="fiche-title">${fiche.title}</div>
+                ${fiche.sections.map(s => s.html).join('')}
+                <div class="fiche-footer">
+                    <b>Bon réflexe :</b> En cas de doute, ne cliquez pas, contactez votre IT ou manager !<br>
+                </div>
+            </div>
+        `;
+        document.getElementById('fiche-bg').innerHTML = html;
+        document.getElementById('fiche-bg').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeFiche() {
+        document.getElementById('fiche-bg').classList.remove('active');
+        setTimeout(()=>{document.getElementById('fiche-bg').innerHTML='';},200);
+        document.body.style.overflow = '';
+    }
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+            card.classList.add('active');
+            showFiche(card.getAttribute('data-fiche'));
+        });
+    });
+    document.getElementById('fiche-bg').addEventListener('click', function(e) {
+        if(e.target===this) closeFiche();
+    });
+    window.addEventListener('keydown', function(e){
+        if(e.key==='Escape') closeFiche();
+    });
+
+    // QUIZ LOGIC
+    const quizData = [
+        {
+            question: "Quel type d’attaque consiste à cibler spécifiquement une personne avec des infos personnalisées ?",
+            choices: [
+                "Vishing",
+                "Hameçonnage de la lance (Spear phishing)",
+                "Smishing",
+                "Empoisonnement SEO"
+            ],
+            answer: 1
+        },
+        {
+            question: "Recevoir un appel téléphonique demandant des infos confidentielles, c’est :",
+            choices: [
+                "Vishing",
+                "Whaling",
+                "Clone phishing",
+                "Smishing"
+            ],
+            answer: 0
+        },
+        {
+            question: "Qu’est-ce que la chasse à la baleine (whaling) ?",
+            choices: [
+                "Attaque de phishing ciblant un cadre dirigeant",
+                "Appel vocal frauduleux",
+                "SMS frauduleux",
+                "Mail qui imite un mail déjà reçu"
+            ],
+            answer: 0
+        },
+        {
+            question: "Quel est le bon réflexe face à un SMS qui annonce un problème de livraison ?",
+            choices: [
+                "Cliquer sur le lien pour plus d’informations",
+                "Appeler l’expéditeur immédiatement",
+                "Ne rien faire et vérifier directement sur le site officiel",
+                "Répondre au SMS"
+            ],
+            answer: 2
+        },
+        {
+            question: "Un site malveillant qui apparaît en haut de Google suite à une recherche populaire, c’est :",
+            choices: [
+                "Clone phishing",
+                "Vishing",
+                "Empoisonnement SEO",
+                "Whaling"
+            ],
+            answer: 2
+        },
+        {
+            question: "Vous recevez un mail identique à un déjà reçu mais le lien a changé : il s’agit sûrement de :",
+            choices: [
+                "Empoisonnement SEO",
+                "Cloner l’hameçonnage (Clone phishing)",
+                "Smishing",
+                "Whaling"
+            ],
+            answer: 1
+        }
+    ];
+
+    let quizState = {
+        step: 0,
+        selected: [],
+        finished: false,
+        score: 0
+    };
+
+    function renderQuiz() {
+        const root = document.getElementById('quiz-root');
+        if (quizState.finished) {
+            // Résultat final
+            let message = quizState.score === quizData.length
+                ? "🎉 Parfait ! Aucune arnaque ne t’échappe."
+                : quizState.score >= quizData.length-2
+                    ? "Bravo ! Encore un petit effort pour devenir un pro du phishing."
+                    : "Attention ! N’hésite pas à relire les fiches pour te protéger.";
+            root.innerHTML = `
+                <div class="quiz-title">Résultat du Quiz</div>
+                <div class="quiz-result ${quizState.score < 4 ? "quiz-bad":""}">
+                    Score : <b>${quizState.score} / ${quizData.length}</b><br>
+                    ${message}
+                </div>
+                <button class="quiz-submit" onclick="restartQuiz()">Rejouer le quiz</button>
+            `;
+            return;
+        }
+        const step = quizState.step;
+        const q = quizData[step];
+        root.innerHTML = `
+            <div class="quiz-title">Quiz de Sensibilisation : Question ${step+1} / ${quizData.length}</div>
+            <div class="quiz-q">${q.question}</div>
+            <div class="quiz-choices" id="quiz-choices">
+                ${q.choices.map((choice, i) =>
+                    `<label class="${quizState.selected[step]===i?"selected":""}">
+                        <input type="radio" name="quiz-choice" value="${i}" ${quizState.selected[step]===i?"checked":""}>
+                        ${choice}
+                    </label>`
+                ).join('')}
+            </div>
+            <button class="quiz-submit" onclick="submitQuizStep()">Valider</button>
+        `;
+        // Sélection réponse
+        document.querySelectorAll('input[name="quiz-choice"]').forEach(input => {
+            input.addEventListener('change', function() {
+                quizState.selected[step]=parseInt(this.value);
+                renderQuiz();
+            });
+        });
+    }
+    function submitQuizStep() {
+        if(typeof quizState.selected[quizState.step]==="undefined") {
+            alert("Choisis une réponse pour continuer !");
+            return;
+        }
+        quizState.step++;
+        if (quizState.step >= quizData.length) {
+            // Calcul du score
+            let score = 0;
+            quizData.forEach((q, i) => {
+                if (quizState.selected[i] === q.answer) score++;
+            });
+            quizState.score = score;
+            quizState.finished = true;
+        }
+        renderQuiz();
+    }
+    function restartQuiz() {
+        quizState = {step:0,selected:[],finished:false,score:0};
+        renderQuiz();
+    }
+    // Initialisation
+    renderQuiz();
+</script>
+</body>
+</html>
